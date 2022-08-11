@@ -69,7 +69,7 @@ preconditioner=@Hfd;
 ds=0.01;
 
 % Number of steps taken in pseudo arclength continuation
-steps=10;
+steps=1000;
 
 %--------------------------------------------------------------------------
 % SOLVE FOR INITIAL SOLUTION + LAMBDA USING NEWTON

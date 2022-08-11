@@ -53,8 +53,9 @@ for j=1:steps
     lambda(j+1)=lambda(j)+ds*dlambda;
     
     % Update variable wrt parameter
-    cellb{1}=lambda(j+1)*b;
-    
+%     cellb{1}=lambda(j+1)*b;
+    cellRHS{1}=lambda(j+1)*sech(x).^2;
+
     % New b(x) function in Newton
     bnew=cellb{1}+2*cellc{1}.*v(:,j+1);
 
@@ -96,6 +97,7 @@ for j=1:steps
         
         % if sqrt(rms(dot([delta_v;delta_lambda],[delta_v;delta_lambda])))<=1e-10
 %         if abs(rms(delta_v))<=1e-10 && abs(delta_lambda)<=1e-10 %
+disp(rms(NA(v(:,j+1),cellk{1},cella{1},cellb{1},cellc{1})-cellRHS{1}))
         if rms(NA(v(:,j+1),cellk{1},cella{1},cellb{1},cellc{1})-cellRHS{1})<=1e-10
             fprintf('Converged after %d Newton Iterations step = %d\n',i,j)
             break % End if converged to sufficient accuracy
@@ -106,7 +108,8 @@ for j=1:steps
         lambda(j+1)=lambda(j+1)+delta_lambda;
         
         % Update variable wrt parameter
-        cellb{1}=lambda(j+1)*b;
+%         cellb{1}=lambda(j+1)*b;
+        cellRHS{1}=lambda(j+1)*sech(x).^2;
         
         % Update vector b for next iteration
         bnew=cellb{1}+2*cellc{1}.*v(:,j+1);

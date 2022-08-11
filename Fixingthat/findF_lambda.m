@@ -8,8 +8,8 @@
 % Ouputs:
 % F_lambda - vector of partial derivative of F wrt lambda
 
-function F_lambda=findF_lambda(x,lambda)
+function F_lambda=findF_lambda(a,b,c,v,x,lambda)
 
-F_lambda=sech(x).^2;
+F_lambda=-sech(x).^2;
 
 end
