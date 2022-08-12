@@ -21,7 +21,7 @@ clear;close
 global L
 
 % Domain size
-L = 30;
+L = 50;
 
 % Number of grids (total points being 2^(grids))
 grids=9;
@@ -33,10 +33,10 @@ gridexact=5;
 Nd=3; 
 
 % Iterations on up cycle (after prolongation)
-Nu=1; 
+Nu=3; 
 
 % Number of v-cycles
-num_vcycles=1; 
+num_vcycles=3; 
 
 % Perform num_vcycles v-cycles
 vcyclegrid=grids-gridexact+1; % number of vcycle grids 
@@ -57,10 +57,10 @@ RHS=0.0*sech(x).^2;
 a=zeros(N,1);
 
 % b(x) function
-b=1.7454*ones(N,1);
+b=0.01*ones(N,1);
 
 % c(x) function
-c=-9/2*ones(N,1);
+c=-3*ones(N,1);
 
 % Preconditioner
 preconditioner=@Hfd;
@@ -69,20 +69,20 @@ preconditioner=@Hfd;
 ds=0.01;
 
 % Number of steps taken in pseudo arclength continuation
-steps=1000;
+steps=5000;
 
 %--------------------------------------------------------------------------
 % SOLVE FOR INITIAL SOLUTION + LAMBDA USING NEWTON
 %--------------------------------------------------------------------------
 
 % Initial gamma (chosen)
-gamma0=0;
+gamma0=-4.6;
 
 % Define RHS 
 RHS=gamma0*sech(x).^2;
 
 % Initial guess (near solution)
-v0=1.0*sech(x).^2;
+v0=-.75*sech(x).^2;
 
 % function to initiate cells
 [cellN,cellk,cella,cellb,cellc,cellRHS,cellv]=setcells2(vcyclegrid,N,k,a,b,c,RHS,v0);
@@ -135,6 +135,7 @@ mag=sqrt(dot(dv,dv)+dgamma^2);
 dv=dv/mag;
 dgamma=dgamma/mag;
 
+tic
 % Pseudo arclength to trace solution family
 [v,gamma]=pseudoarclength(v0,gamma,dv,dgamma,ds,steps,... 
     x,relaxation,vcyclegrid,cellN,cellk,Nd,Nu,cella,cellb,cellc,cellRHS);
