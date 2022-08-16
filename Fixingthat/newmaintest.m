@@ -21,7 +21,7 @@ clear;close
 global L
 
 % Domain size
-L = 50;
+L = 30;
 
 % Number of grids (total points being 2^(grids))
 grids=9;
@@ -57,7 +57,7 @@ RHS=0.0*sech(x).^2;
 a=zeros(N,1);
 
 % b(x) function
-b=0.01*ones(N,1);
+b=1*ones(N,1);
 
 % c(x) function
 c=-3*ones(N,1);
