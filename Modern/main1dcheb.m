@@ -3,7 +3,7 @@ clear;close all;%clc
 % Simple main for Cheb Fourier SMG, uses homogenous Dirichlet / Neumann BCs
 % 
 % -------------------------------------------------------------------------
-% Solve PDE u_xx + au_x + bu = f using Fourier Cheb Spectral Multigrid
+% Solve PDE au_xx + bu_x + cu = f using Fourier Cheb Spectral Multigrid
 % -------------------------------------------------------------------------
 % INPUT PARAMETERS
 % -------------------------------------------------------------------------
@@ -14,35 +14,36 @@ dim=1;
 % Discretisation flag for each dimension
 % 1 - Fourier
 % 2 - Cheb
-discretisation=1;
+discretisation=2;
 
 % Boundary conditions for each discretisation (if fourier not used)
 % x(1) a1*u+b1*u'=rhs1
 alpha1{1}=@(y) 0;
 beta1{1}=@(y) 1;
-BCRHS1{1}=@(y) 0;
+BCRHS1{1}=@(y) 2*exp(1);
 
 % x(end) a21*u+b21*u'= rhs21
 alpha2{1}=@(y) 1;
 beta2{1}=@(y) 0; 
-BCRHS2{1}=@(y) 0;
+BCRHS2{1}=@(y) -1/exp(1);
 
 % Grid size
 finestgrid = 6;
 coarsestgrid = 3;
 
 % PDE Parameters
-a=@(x) 1;
-b=@(x) 1;
+a=@(X) 2+sin(X);
+b=@(X) 1+X.^2;
+c=@(X) exp(X);
 
 % RHS
-f=@(x) x;
+f=@(X) exp(X).*(5+X.*(3+exp(X)+X+X.^2)+(2+X).*sin(X));
 
 % Exact solution
-ue=@(x) x;
+ue=@(X) X.*exp(X);
 
 % Initial guess
-v0=@(x) x;
+v0=@(X) rand(size(X));
 
 % -------------------------------------------------------------------------
 % Multigrid Options here
@@ -71,13 +72,13 @@ option.coarsegridsolver=@specmatrixsolve_1d;
 option.relaxation=@MRR;
 
 % Restriction for pde coefficients
-option.restriction=@(vf) restrict_2d(vf,@cheb_restrict,@fourier_restrict_filtered);
+option.restriction=@(vf) cheb_restrict(vf);
 
 % Restriction for residual and RHS
-option.restriction_residual=@(vf) restrict_2d(vf,@cheb_restrict_residual,@fourier_restrict_filtered);
+option.restriction_residual=@(vf) cheb_restrict_residual(vf);
 
 % Prolongation
-option.prolongation=@(vc) prolong_2d(vc,@cheb_prolong,@fourier_prolong_filtered);
+option.prolongation=@(vc) cheb_prolong(vc);
 
 % Preconditioner
 option.preconditioner=@FDmatrixsolve_1d;
@@ -88,7 +89,7 @@ option.prenumit=1;
 % -------------------------------------------------------------------------
 % Set up parameters
 % -------------------------------------------------------------------------
-N=zeros(1,dim);
+N=ones(1,max(dim,2)); 
 x=cell(1,dim);
 k=cell(1,dim);
 dx=cell(1,dim);
@@ -115,12 +116,15 @@ for i=1:length(discretisation)
     
 end
 
-a=a(x);
-b=b(x);
-f=f(x);
+X=x{1};
 
-ue=ue(x);
-v0=v0(x);
+a=a(X);
+b=b(X);
+c=c(X);
+f=f(X);
+
+ue=ue(X);
+v0=v0(X);
 
 % -------------------------------------------------------------------------
 % Set up BCs
@@ -200,10 +204,9 @@ disp(rms(r(:)))
 tic
 option.numit=5;
 [vv,rr]=MRR(v0,pde,domain,option);
-disp(rms(r(:)))
+disp(rms(rr(:)))
 toc
 
-surf(X,Y,v);xlabel('x');ylabel('y');title('Numerical solution of Poissons equation')
-figure;contour(X,Y,v);xlabel('x');ylabel('y')
-figure;surf(X,Y,abs(v-ue));xlabel('x');ylabel('y');title('Error compared to exact solution')
+plot(X,v);xlabel('x');ylabel('v');title('Numerical solution of ODE')
+figure;plot(X,abs(v-ue));xlabel('x');ylabel('Error');title('Error compared to exact solution')
 

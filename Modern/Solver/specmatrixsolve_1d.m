@@ -1,4 +1,5 @@
-% Solves u_xx+au_x+bu=f with 2nd-order FD scheme
+% Solves au_xx+bu_yy+c*u=f with 2nd-order FD scheme (cheb-fourier mesh)
+% Solves au_xx+bu_x+c*u=f with 2nd-order FD scheme (cheb-fourier mesh)
 %
 % Uses matrix inversion (backslash)
 % Assumes periodic boundary conditions
@@ -32,6 +33,9 @@ end
 if length(pde.b)==1
     b=pde.b*ones(domain.N);
 end
+if length(pde.c)==1
+    c=pde.c*ones(domain.N);
+end
 
 for i=1:length(domain.discretisation)
     
@@ -41,12 +45,15 @@ for i=1:length(domain.discretisation)
             
             % 1D u_xx
             Dxx{i}=real(ifft(-k{i}.^2.*fft(eye(N(i),N(i)))));
+            % 1D u_x
+            Dx{i}=real(ifft(1i*k{i}.*fft(eye(N(i),N(i)))));
             
         case 2 % Cheb
             
             % 1D u_xx
             Dxx{i}=ifct(chebdiff(fct(eye(N(i),N(i))),2));
-            
+            % 1D u_x
+            Dx{i}=ifct(chebdiff(fct(eye(N(i),N(i))),1));            
     end
             
 end
@@ -90,15 +97,28 @@ for i=1:domain.dim
     
 end
 
-BC2_mat=kron(speye(N(2)),BC_mat{1})+kron(BC_mat{2},speye(N(1)));
+% -------------------------------------------------------------------------
+% 1D matrices
+if domain.dim==1
 
+    % Spectral matrix
+    A=a_mat{1}(:).*Dxx{1}+a_mat{2}(:).*Dx{1}+a_mat{3}(:).*speye(Nx*Ny)+BC_mat{1};
+
+end
 % -------------------------------------------------------------------------
 % 2D matrices
-D2xx=kron(speye(N(2)),Dxx{1});
-D2yy=kron(Dxx{2},speye(N(1)));
+if domain.dim==2
 
-% Spectral matrix
-A=a_mat{1}(:).*D2xx+a_mat{2}(:).*D2yy+a_mat{3}(:).*speye(Nx*Ny)+BC2_mat;
+    % BC matrix
+    BC2_mat=kron(speye(N(2)),BC_mat{1})+kron(BC_mat{2},speye(N(1)));
+
+    D2xx=kron(speye(N(2)),Dxx{1});
+    D2yy=kron(Dxx{2},speye(N(1)));
+    
+    % Spectral matrix
+    A=a_mat{1}(:).*D2xx+a_mat{2}(:).*D2yy+a_mat{3}(:).*speye(Nx*Ny)+BC2_mat;
+
+end
 % -------------------------------------------------------------------------
 % Check if Poisson type problem, then solve for mean 0 solution
 % if max(abs(pde.c(:)))<1e-12
