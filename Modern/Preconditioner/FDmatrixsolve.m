@@ -15,16 +15,18 @@
 % v - solution
 %
 
-function v=FDmatrixsolve_1d(~,pde,domain,~)
+function v=FDmatrixsolve(~,pde,domain,~)
 
 N=domain.N;
 Nx=domain.N(1);
 Ny=domain.N(2);
-k=domain.k;
 dx=domain.dx;
 a=pde.a;
 b=pde.b;
 c=pde.c;
+
+Dxx=cell(domain.dim,1);
+Dx=cell(domain.dim,1);
 
 % Check if coefficients constant
 if length(pde.a)==1
@@ -47,9 +49,9 @@ for i=1:length(domain.discretisation)
             % Preset diagonal array
             B=zeros(N(i),3);
 
-            B(1:N(i),2)=(-2)/dx{i}^2;
-            B(1:N(i)-1,1)=(1)/(dx{i}^2);
-            B(2:N(i),3)=(1)/(dx{i}^2);
+            B(1:N(i),2)=-2/dx{i}^2;
+            B(1:N(i)-1,1)=1/(dx{i}^2);
+            B(2:N(i),3)=1/(dx{i}^2);
 
             % Diagonal position array
             d=[-1 0 1];
@@ -58,10 +60,10 @@ for i=1:length(domain.discretisation)
             Dxx{i}=spdiags(B,d,N(i),N(i));
 
             % First row (cyclic)
-            Dxx{i}(1,N(i))=(1)/(dx{i}^2);
+            Dxx{i}(1,N(i))=1/(dx{i}^2);
             
             % Last row (cyclic)
-            Dxx{i}(N(i),1)=(1)/(dx{i}^2);
+            Dxx{i}(N(i),1)=1/(dx{i}^2);
 
             % 1D u_x
             % Preset diagonal array
@@ -125,7 +127,7 @@ for i=1:length(domain.discretisation)
             d=[-1 0 1];
 
             % Generate sparse matrix
-            Dx{i}=spdiags(-B,d,N(i),N(i)); %ehh why -B?
+            Dx{i}=spdiags(B,d,N(i),N(i));
             
     end
             
@@ -155,22 +157,22 @@ for i=1:domain.dim
     
     if domain.discretisation(i)~=1
         
-        % Right neumann x(1) BC
-        BC_mat{i}(1,1)=1/dx{i}(1)+1/(dx{i}(1)+dx{i}(2));
-        BC_mat{i}(1,2)=-1/dx{i}(1)-1/dx{i}(2);
-        BC_mat{i}(1,3)=dx{i}(1)/(dx{i}(2)*(dx{i}(1)+dx{i}(2)));
+        % Left neumann x(1) BC
+        BC_mat{i}(1,1)=-1/dx{i}(1)-1/(dx{i}(1)+dx{i}(2));
+        BC_mat{i}(1,2)=1/dx{i}(1)+1/dx{i}(2);
+        BC_mat{i}(1,3)=-dx{i}(1)/(dx{i}(2)*(dx{i}(1)+dx{i}(2)));
         BC_mat{i}(1,:)=BC_mat{i}(1,:).*domain.BC{2,i}; % BC coefficient
-        % (backward difference scheme i,i-1,i-2)
+        % (forward difference scheme i,i+1,i+2)
 
         % Dirichlet 
         BC_mat{i}(1,1)=BC_mat{i}(1,1)+domain.BC{1,i};
-        
-        % Left neumann x(end) BC
-        BC_mat{i}(end,end)=-1/dx{i}(end)-1/(dx{i}(end)+dx{i}(end-1));
-        BC_mat{i}(end,end-1)=1/dx{i}(end)+1/dx{i}(end-1);
-        BC_mat{i}(end,end-2)=-dx{i}(end)/(dx{i}(end-1)*(dx{i}(end)+dx{i}(end-1)));
-        BC_mat{i}(end,:)=BC_mat{i}(end,:).*domain.BC{4,i}; % BC coefficient
-        % (forward difference scheme i,i+1,i+2)
+
+        % Right neumann x(end) BC
+        BC_mat{i}(end,end)=1/dx{i}(end)+1/(dx{i}(end)+dx{i}(end-1));
+        BC_mat{i}(end,end-1)=-1/dx{i}(end)-1/dx{i}(end-1);
+        BC_mat{i}(end,end-2)=dx{i}(end)/(dx{i}(end-1)*(dx{i}(end)+dx{i}(end-1)));
+        BC_mat{i}(end,:)=BC_mat{i}(end,:).*domain.BC{4,i}; % BC coefficient  
+        % (backward difference scheme i,i-1,i-2)
 
         % Dirichlet 
         BC_mat{i}(end,end)=BC_mat{i}(end,end)+domain.BC{3,i};

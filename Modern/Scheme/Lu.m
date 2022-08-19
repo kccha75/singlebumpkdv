@@ -12,8 +12,8 @@
 %
 % Ouputs:
 % f - L*u
-%
-function f=Lu_1d(v,pde,domain)
+
+function f=Lu(v,pde,domain)
 
 k=domain.k;
 
@@ -21,9 +21,9 @@ a=pde.a;
 b=pde.b;
 c=pde.c;
 
-u=cell(domain.dim);
-Dxx=cell(domain.dim);
-Dx=cell(domain.dim);
+u=cell(domain.dim,1);
+Dxx=cell(domain.dim,1);
+Dx=cell(domain.dim,1);
 
 u{1}=v;
 if domain.dim==2;u{2}=v';end
@@ -33,7 +33,7 @@ for i=1:domain.dim
     switch domain.discretisation(i)
         
         case 1 % Fourier
-            
+
             % 1D u_xx
             Dxx{i}=real(ifft(-k{i}.^2.*fft(u{i})));
 
@@ -41,7 +41,7 @@ for i=1:domain.dim
             Dx{i}=real(ifft(1i*k{i}.*fft(u{i})));
 
         case 2 % Cheb
-            
+
             % 1D u_xx
             Dxx{i}=ifct(chebdiff(fct(u{i}),2));
             % 1D u_x
@@ -49,22 +49,16 @@ for i=1:domain.dim
 
     end
     
-    
 end
 
 if domain.dim==1
-
     % Compute au_xx+bu_x+cu matrix
     f=a.*Dxx{1}+b.*Dx{1}+c.*u{1};
-
 end
 
-
 if domain.dim==2
-
     % Compute au_xx+bu_yy+cu matrix
     f=a.*Dxx{1}+b.*Dxx{2}'+c.*u{1};
-
 end
 
 % -------------------------------------------------------------------------

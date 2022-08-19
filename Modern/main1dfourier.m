@@ -67,8 +67,8 @@ option.solver='FMG';
 option.mgscheme='FAS';
 
 % Operator, coarse grid solver, Relaxation
-option.operator=@Lu_1d;
-option.coarsegridsolver=@specmatrixsolve_1d;
+option.operator=@Lu;
+option.coarsegridsolver=@specmatrixsolve;
 option.relaxation=@MRR;
 
 % Restriction for pde coefficients
@@ -81,7 +81,7 @@ option.restriction_residual=@(vf) fourier_restrict_filtered(vf);
 option.prolongation=@(vc) fourier_prolong_filtered(vc);
 
 % Preconditioner
-option.preconditioner=@FDmatrixsolve_1d;
+option.preconditioner=@FDmatrixsolve;
 
 % Number of preconditioned relaxations
 option.prenumit=1;
@@ -110,7 +110,7 @@ for i=1:length(discretisation)
             N(i) = 2^finestgrid+1;
             k{i} = (0:N(i)-1)';
             x{i} = cos(pi*k{i}/(N(i)-1));
-            dx{i} = x{i}(1:end-1)-x{i}(2:end); % due to x(1)=1, x(end)=-1
+            dx{i} = x{i}(2:end)-x{i}(1:end-1); % is negative but ok :)
             
     end
     
@@ -189,7 +189,6 @@ for i=1:domain.dim
     
 end
 
-
 % -------------------------------------------------------------------------
 % SOLVE HERE
 % -------------------------------------------------------------------------
@@ -201,11 +200,6 @@ tic
 % [v,r]=bicgstab(v0,pde,domain,option);
 toc
 disp(rms(r(:)))
-tic
-option.numit=5;
-[vv,rr]=MRR(v0,pde,domain,option);
-disp(rms(rr(:)))
-toc
 
 plot(X,v);xlabel('x');ylabel('v');title('Numerical solution of ODE')
 figure;plot(X,abs(v-ue));xlabel('x');ylabel('Error');title('Error compared to exact solution')

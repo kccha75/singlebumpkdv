@@ -16,7 +16,7 @@
 % v - solution
 %
 
-function v=specmatrixsolve_1d(~,pde,domain,~)
+function v=specmatrixsolve(~,pde,domain,~)
 
 N=domain.N;
 Nx=domain.N(1);
@@ -25,6 +25,9 @@ k=domain.k;
 a=pde.a;
 b=pde.b;
 c=pde.c;
+
+Dxx=cell(domain.dim,1);
+Dx=cell(domain.dim,1);
 
 % Check if coefficients constant
 if length(pde.a)==1
