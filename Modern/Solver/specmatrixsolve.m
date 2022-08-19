@@ -1,20 +1,23 @@
-% Solves au_xx+bu_yy+c*u=f with 2nd-order FD scheme (cheb-fourier mesh)
-% Solves au_xx+bu_x+c*u=f with 2nd-order FD scheme (cheb-fourier mesh)
+% Solves au_xx+bu_yy+c*u=f with spectral matrix inversion
+% OR
+% Solves au_xx+bu_x+c*u=f with spectral matrix inversion
+%
+% Chebyshev or Fourier pseudospectral
 %
 % Uses matrix inversion (backslash)
-% Assumes periodic boundary conditions
 %
 % Inputs:
 % v - not used except for size purposes
 % pde.a
 % pde.b
 % pde.f
-% domain.dx
+% domain.dim - can only do 1D or 2D
+% domain.discretisation - cheb or fourier
+% domain.BC - BC for cheb
 % domain.N
 % 
 % Ouputs:
 % v - solution
-%
 
 function v=specmatrixsolve(~,pde,domain,~)
 
@@ -26,8 +29,8 @@ a=pde.a;
 b=pde.b;
 c=pde.c;
 
-Dxx=cell(domain.dim,1);
 Dx=cell(domain.dim,1);
+Dxx=cell(domain.dim,1);
 
 % Check if coefficients constant
 if length(pde.a)==1
@@ -91,6 +94,7 @@ for i=1:domain.dim
         BC_mat{i}(end,:)=domain.BC{4,i}.*sum((-1).^(k{i}+1).*fct(eye(N(i),N(i))).*k{i}.^2);% x(end) BC
         BC_mat{i}(end,end)=BC_mat{i}(end,end)+domain.BC{3,i};
         
+        % make sure no influence on BC matrix from a,b,c
         for j=1:3
             a_mat{j}(index{1,i})=0;
             a_mat{j}(index{2,i})=0;
@@ -123,13 +127,7 @@ if domain.dim==2
 
 end
 % -------------------------------------------------------------------------
-% Check if Poisson type problem, then solve for mean 0 solution
-% if max(abs(pde.c(:)))<1e-12
-
-%     A(1,:)=1;
-%     pde.f(1)=0;
-    
-% end
+% Solve!
 
 v=A\pde.f(:);
 v=reshape(v,Nx,Ny);

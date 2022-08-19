@@ -1,13 +1,20 @@
-% Performs multiplication L*u using Spectral collocation methods
+% Performs multiplication L*u
+% Chebyshev or Fourier pseudospectral methods
+%
 % L is the spectral operator for the given PDE in the form
-% au_xx+bu_yy+cu=f
-% au_xx+bu_x+cu=f
+%
+% au_xx+bu_yy+c*u=f
+% OR
+% au_xx+bu_x+c*u=f 
 %
 % Inputs:
 % v - best estimate
 % pde.a
 % pde.b
 % pde.c
+% domain.dim
+% domain.discretisation
+% domain.BC
 % domain.k - wave number
 %
 % Ouputs:
@@ -22,8 +29,8 @@ b=pde.b;
 c=pde.c;
 
 u=cell(domain.dim,1);
-Dxx=cell(domain.dim,1);
 Dx=cell(domain.dim,1);
+Dxx=cell(domain.dim,1);
 
 u{1}=v;
 if domain.dim==2;u{2}=v';end

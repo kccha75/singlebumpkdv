@@ -1,19 +1,24 @@
-% Solves au_xx+bu_yy+c*u=f with 2nd-order FD scheme (cheb-fourier mesh)
+% Solves au_xx+bu_yy+c*u=f with 2nd order FD matrix inversion
+% OR
+% Solves au_xx+bu_x+c*u=f with 2nd order FD matrix inversion
+%
+% Chebyshev or Fourier pseudospectral
 %
 % Uses matrix inversion (backslash)
-% Assumes periodic boundary conditions
 %
 % Inputs:
 % v - not used except for size purposes
 % pde.a
 % pde.b
 % pde.f
-% domain.dx
+% domain.dim - can only do 1D or 2D
+% domain.discretisation - cheb or fourier
+% domain.BC - BC for cheb
 % domain.N
+% domain.dx
 % 
 % Ouputs:
 % v - solution
-%
 
 function v=FDmatrixsolve(~,pde,domain,~)
 
@@ -110,7 +115,6 @@ for i=1:length(domain.discretisation)
             Dxx{i}=spdiags(B,d,N(i),N(i));
 
             % 1D u_x
-
             % Preset diagonal array
             B=zeros(N(i),3);
 
@@ -208,13 +212,7 @@ if domain.dim==2
 
 end
 % -------------------------------------------------------------------------
-% Check if Poisson type problem, then solve for mean 0 solution
-% if max(abs(pde.c(:)))<1e-12
-
-%     A(1,:)=1;
-%     pde.f(1)=0;
-    
-% end
+% Solve!
 
 v=A\pde.f(:);
 v=reshape(v,Nx,Ny);
